@@ -111,11 +111,35 @@ const findStudentToUpdate = async (paylaod) => {
     return rows;
 }
 
+const deleteStudentById = async (id) => {
+    try {
+        const deleteProfileQuery = `
+            DELETE FROM user_profiles
+            WHERE user_id = $1
+        `;
+        const profileParams = [id];
+        await processDBRequest({ query: deleteProfileQuery, queryParams: profileParams });
+
+        const deleteUserQuery = `
+            DELETE FROM users
+            WHERE id = $1 AND role_id = 3  -- Assuming role_id = 3 is for students
+        `;
+        const userParams = [id];
+        const { rowCount } = await processDBRequest({ query: deleteUserQuery, queryParams: userParams });
+
+        return rowCount;
+    } catch (error) {
+        console.error("Database error during deletion:", error.message);
+        throw new ApiError(500, "Error during student deletion process");
+    }
+};
+
 module.exports = {
     getRoleId,
     findAllStudents,
     addOrUpdateStudent,
     findStudentDetail,
     findStudentToSetStatus,
-    findStudentToUpdate
+    findStudentToUpdate,
+    deleteStudentById
 };
